@@ -65,6 +65,8 @@ Phase 4 contracts and working schedules now provide derived weekly hours, histor
 
 Phase 5 attendance now provides check-in/check-out lifecycle handling, derived worked hours, missing-checkout exceptions, and role-restricted manual corrections.
 
+Phase 6 time off now provides policy types, approved allocations, employee balances, request submission, approval/refusal, and atomic balance deduction.
+
 ## First technical milestone
 
 Complete Step 1 and the employee foundation with one vertical check: an authorized user can create an employee, retrieve it through the API, and see it in the frontend.
