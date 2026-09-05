@@ -7,3 +7,4 @@ export const payrunStatuses = ['draft', 'computing', 'computed', 'validated', 'p
 export const payslipStatuses = ['draft', 'computed', 'validated', 'paid', 'cancelled']
 export const salaryRuleAmountTypes = ['fixed', 'percentage', 'formula']
 export const salaryRuleCategories = ['basic', 'allowance', 'gross', 'deduction', 'contribution', 'net']
+export const roles = ['employee', 'hr_manager', 'hr_payroll_user', 'hr_payroll_manager', 'admin']

@@ -17,6 +17,14 @@ Build in vertical slices so every stage leaves a demonstrable workflow.
 - Preserve finalized payroll values through employee and contract snapshots on payslips.
 - Keep cross-document rules such as overlapping-contract detection in application services.
 
+## Step 3: Authentication and RBAC
+
+- Add User identities linked one-to-one with Employees.
+- Hash passwords with bcrypt and issue expiring JWT access tokens.
+- Protect routes with authentication and role authorization middleware.
+- Keep public registration limited to Employee accounts; bootstrap and manage elevated roles through Admin-only operations.
+- Preserve ownership checks as a separate layer from role checks for employee self-service data.
+
 ## Step 2: Employee foundation
 
 - Employee, department, job position, and user models.

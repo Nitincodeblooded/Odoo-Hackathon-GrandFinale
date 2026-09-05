@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { employeeStatuses } from './enums.js'
 
 const employeeSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true, sparse: true },
   employeeNumber: { type: String, required: true, unique: true, trim: true },
   firstName: { type: String, required: true, trim: true },
   lastName: { type: String, required: true, trim: true },

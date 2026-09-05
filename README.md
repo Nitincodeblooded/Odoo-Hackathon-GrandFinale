@@ -63,3 +63,32 @@ npm run dev
 The frontend runs at `http://localhost:5173`. The backend runs at `http://localhost:5000`, and its health endpoint is `http://localhost:5000/api/health`.
 
 The API still starts when Atlas is unavailable, while `/api/health` exposes the current database state. Never commit `backend/.env` or place Atlas credentials in source files.
+
+## Phase 2 authentication
+
+Roles are ordered by responsibility: `employee`, `hr_manager`, `hr_payroll_user`, `hr_payroll_manager`, and `admin`.
+
+| Role | Access |
+|---|---|
+| Employee | Own employee details, attendance, and time-off workflows |
+| HR Manager | Employee, attendance, contract, schedule, and time-off administration |
+| HR Payroll User | HR Manager access plus payrun/payslip create, read, and update; read-only salary configuration |
+| HR Payroll Manager | Full HR and payroll configuration access |
+| Admin | All modules, users, roles, and permissions |
+
+Public registration always creates an `employee` account. Bootstrap the first Admin through environment variables:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+# Set ADMIN_* and Atlas values in backend/.env
+npm run seed:admin --prefix backend
+```
+
+Authentication endpoints:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me` with `Authorization: Bearer <token>`
+- `PATCH /api/auth/users/:userId/role` for Admin only
+
+Protected employee endpoints include `GET /api/employees` for all authenticated roles and `POST /api/employees` for HR and Admin roles.
