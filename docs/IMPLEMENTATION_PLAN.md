@@ -63,6 +63,8 @@ Phase 3 employee management is the first complete operational hub slice: it prov
 
 Phase 4 contracts and working schedules now provide derived weekly hours, historical contract records, active-period overlap validation, and a single applicable-contract service for payroll consumption.
 
+Phase 5 attendance now provides check-in/check-out lifecycle handling, derived worked hours, missing-checkout exceptions, and role-restricted manual corrections.
+
 ## First technical milestone
 
 Complete Step 1 and the employee foundation with one vertical check: an authorized user can create an employee, retrieve it through the API, and see it in the frontend.

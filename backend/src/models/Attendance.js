@@ -19,6 +19,14 @@ attendanceSchema.pre('validate', function validateTimes(next) {
   if (this.checkIn && this.checkOut && this.checkOut < this.checkIn) {
     this.invalidate('checkOut', 'Check-out cannot precede check-in')
   }
+  if (this.checkIn && this.checkOut && this.checkOut >= this.checkIn) {
+    this.workedHours = Math.round(((this.checkOut - this.checkIn) / 3600000) * 100) / 100
+    if (!this.manuallyCorrected && this.status === 'missing_checkout') this.status = 'present'
+  } else if (this.checkIn && !this.checkOut && !this.manuallyCorrected) {
+    this.status = 'missing_checkout'
+    this.workedHours = 0
+  }
+  if (this.manuallyCorrected && this.status !== 'absent') this.status = 'corrected'
   next()
 })
 
