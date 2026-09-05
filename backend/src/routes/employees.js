@@ -1,27 +1,14 @@
 import { Router } from 'express'
-import Employee from '../models/Employee.js'
 import { authenticate, authorize } from '../middleware/auth.js'
+import { createEmployee, deactivateEmployee, employeeManagementRoles, getEmployee, listEmployees, updateEmployee } from '../controllers/employees.js'
 
 const router = Router()
-const hrRoles = ['hr_manager', 'hr_payroll_user', 'hr_payroll_manager', 'admin']
 
-router.get('/', authenticate, async (_request, response, next) => {
-  try {
-    const employees = await Employee.find().sort({ lastName: 1, firstName: 1 })
-    return response.json({ employees })
-  } catch (error) {
-    return next(error)
-  }
-})
-
-router.post('/', authenticate, authorize(...hrRoles), async (request, response, next) => {
-  try {
-    const { employeeNumber, firstName, lastName, workEmail, department, jobPosition, employeeType } = request.body
-    const employee = await Employee.create({ employeeNumber, firstName, lastName, workEmail, department, jobPosition, employeeType })
-    return response.status(201).json({ employee })
-  } catch (error) {
-    return next(error)
-  }
-})
+router.use(authenticate)
+router.get('/', listEmployees)
+router.get('/:employeeId', getEmployee)
+router.post('/', authorize(...employeeManagementRoles), createEmployee)
+router.patch('/:employeeId', authorize(...employeeManagementRoles), updateEmployee)
+router.delete('/:employeeId', authorize(...employeeManagementRoles), deactivateEmployee)
 
 export default router

@@ -19,7 +19,13 @@ app.use((_request, response) => {
 
 app.use((error, _request, response, _next) => {
   console.error(error)
-  response.status(500).json({ error: 'Internal server error' })
+  if (error.code === 11000) {
+    return response.status(409).json({ error: 'A record with one of these unique values already exists' })
+  }
+  if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+  return response.status(error.statusCode || 500).json({ error: error.statusCode ? error.message : 'Internal server error' })
 })
 
 export default app

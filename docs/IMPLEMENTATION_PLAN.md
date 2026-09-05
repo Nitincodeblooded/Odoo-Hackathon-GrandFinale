@@ -25,39 +25,41 @@ Build in vertical slices so every stage leaves a demonstrable workflow.
 - Keep public registration limited to Employee accounts; bootstrap and manage elevated roles through Admin-only operations.
 - Preserve ownership checks as a separate layer from role checks for employee self-service data.
 
-## Step 2: Employee foundation
+## Step 4: Employee foundation
 
 - Employee, department, job position, and user models.
 - Employee list/form views and role-aware navigation.
 - Related-record counts and employee detail route.
 
-## Step 3: Contracts and schedules
+## Step 5: Contracts and schedules
 
 - Historical contract model with period validation.
 - Working schedule model with calculated weekly hours.
 - Employee assignment and applicable-contract service.
 
-## Step 4: Attendance and time off
+## Step 6: Attendance and time off
 
 - Attendance records, exception states, corrections, and worked-hour calculation.
 - Time-off types, allocations, requests, approval workflow, and balance consumption.
 
-## Step 5: Salary configuration
+## Step 7: Salary configuration
 
 - Salary categories, structures, and ordered rules.
 - A tested calculation service supporting fixed amounts, percentages, and formulas.
 
-## Step 6: Payruns and payslips
+## Step 8: Payruns and payslips
 
 - Two-step payrun creation flow.
 - Contract selection, salary calculation, warnings, compute, validate, and paid states.
 - Payslip detail view, PDF generation, and bulk delivery boundary.
 
-## Step 7: Dashboard and polish
+## Step 9: Dashboard and polish
 
 - Live dashboard aggregations and filters.
 - Kanban/list/form usability, loading/error/empty states, permissions, and audit history.
 - Seeded demo data and the two five-minute walkthroughs.
+
+Phase 3 employee management is the first complete operational hub slice: it provides role-aware employee listing, detail views, CRUD management, soft deactivation, relationship validation, and related-record counts.
 
 ## First technical milestone
 
