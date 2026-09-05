@@ -75,6 +75,8 @@ Phase 9 now combines contract wage, attendance, approved leave, employee data, a
 
 Phase 10 now provides individual PDF/print output and SMTP-backed bulk payslip delivery from paid Payruns.
 
+Phase 11 now provides live filtered dashboard KPIs, salary charts, payroll status, missing-information, duplicate-payslip, and contract alerts from database records.
+
 ## First technical milestone
 
 Complete Step 1 and the employee foundation with one vertical check: an authorized user can create an employee, retrieve it through the API, and see it in the frontend.
