@@ -7,6 +7,7 @@ import contractsRouter from './routes/contracts.js'
 import schedulesRouter from './routes/schedules.js'
 import attendanceRouter from './routes/attendance.js'
 import timeOffRouter from './routes/timeOff.js'
+import salaryRouter from './routes/salary.js'
 
 const app = express()
 
@@ -20,6 +21,7 @@ app.use('/api/contracts', contractsRouter)
 app.use('/api/working-schedules', schedulesRouter)
 app.use('/api/attendance', attendanceRouter)
 app.use('/api/time-off', timeOffRouter)
+app.use('/api/salary-structures', salaryRouter)
 
 app.use((_request, response) => {
   response.status(404).json({ error: 'Route not found' })

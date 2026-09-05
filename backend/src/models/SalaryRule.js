@@ -11,10 +11,18 @@ const salaryRuleSchema = new mongoose.Schema({
   amount: { type: Number, min: 0 },
   percentage: { type: Number, min: 0, max: 100 },
   formula: { type: String, trim: true },
+  dependsOn: [{ type: String, uppercase: true, trim: true }],
   active: { type: Boolean, default: true },
 }, { timestamps: true })
 
 salaryRuleSchema.index({ salaryStructureId: 1, code: 1 }, { unique: true })
 salaryRuleSchema.index({ salaryStructureId: 1, sequence: 1 })
+
+salaryRuleSchema.pre('validate', function validateAmountConfiguration(next) {
+  if (this.amountType === 'fixed' && this.amount === undefined) this.invalidate('amount', 'Fixed rules require an amount')
+  if (this.amountType === 'percentage' && this.percentage === undefined) this.invalidate('percentage', 'Percentage rules require a percentage')
+  if (this.amountType === 'formula' && !this.formula) this.invalidate('formula', 'Formula rules require a formula')
+  next()
+})
 
 export default mongoose.model('SalaryRule', salaryRuleSchema)
