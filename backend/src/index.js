@@ -1,17 +1,9 @@
 import 'dotenv/config'
-import cors from 'cors'
-import express from 'express'
+import app from './app.js'
+import { connectDatabase } from './config/database.js'
+import { env } from './config/env.js'
 
-const app = express()
-const port = process.env.PORT || 5000
-
-app.use(cors())
-app.use(express.json())
-
-app.get('/api/health', (_request, response) => {
-  response.json({ status: 'ok' })
-})
-
-app.listen(port, () => {
-  console.log(`API server running on port ${port}`)
+app.listen(env.port, () => {
+  console.log(`PeoplePay360 API running on port ${env.port}`)
+  void connectDatabase(env.mongodbUri)
 })

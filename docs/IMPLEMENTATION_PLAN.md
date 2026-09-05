@@ -1,0 +1,56 @@
+# Implementation Plan
+
+Build in vertical slices so every stage leaves a demonstrable workflow.
+
+## Step 1: Foundation
+
+- Establish root scripts for frontend and backend.
+- Add MongoDB connection configuration and a consistent API response/error shape.
+- Define authentication, roles, and permission middleware.
+- Create the first health endpoint and seed strategy.
+
+## Step 2: Database architecture
+
+- Define Mongoose models for employees, contracts, schedules, attendance, time off, salary configuration, payruns, payslips, and payslip lines.
+- Use ObjectId references for parent-child relationships and timestamps for historical tracking.
+- Add enums, validation, uniqueness rules, and period-oriented indexes.
+- Preserve finalized payroll values through employee and contract snapshots on payslips.
+- Keep cross-document rules such as overlapping-contract detection in application services.
+
+## Step 2: Employee foundation
+
+- Employee, department, job position, and user models.
+- Employee list/form views and role-aware navigation.
+- Related-record counts and employee detail route.
+
+## Step 3: Contracts and schedules
+
+- Historical contract model with period validation.
+- Working schedule model with calculated weekly hours.
+- Employee assignment and applicable-contract service.
+
+## Step 4: Attendance and time off
+
+- Attendance records, exception states, corrections, and worked-hour calculation.
+- Time-off types, allocations, requests, approval workflow, and balance consumption.
+
+## Step 5: Salary configuration
+
+- Salary categories, structures, and ordered rules.
+- A tested calculation service supporting fixed amounts, percentages, and formulas.
+
+## Step 6: Payruns and payslips
+
+- Two-step payrun creation flow.
+- Contract selection, salary calculation, warnings, compute, validate, and paid states.
+- Payslip detail view, PDF generation, and bulk delivery boundary.
+
+## Step 7: Dashboard and polish
+
+- Live dashboard aggregations and filters.
+- Kanban/list/form usability, loading/error/empty states, permissions, and audit history.
+- Seeded demo data and the two five-minute walkthroughs.
+
+## First technical milestone
+
+Complete Step 1 and the employee foundation with one vertical check: an authorized user can create an employee, retrieve it through the API, and see it in the frontend.
