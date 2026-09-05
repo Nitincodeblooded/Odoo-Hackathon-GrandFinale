@@ -71,6 +71,8 @@ Phase 7 salary structures and rules now provide ordered fixed, percentage, and f
 
 Phase 8 Payruns now provide two-step employee selection, contract-aware computation, salary-rule-driven payslips, guarded validation/payment transitions, and delivery timestamps.
 
+Phase 9 now combines contract wage, attendance, approved leave, employee data, and configuration-driven salary rules into historical payslips with blocking payroll warnings.
+
 ## First technical milestone
 
 Complete Step 1 and the employee foundation with one vertical check: an authorized user can create an employee, retrieve it through the API, and see it in the frontend.

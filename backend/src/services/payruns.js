@@ -7,7 +7,8 @@ import Payslip from '../models/Payslip.js'
 import PayslipLine from '../models/PayslipLine.js'
 import SalaryRule from '../models/SalaryRule.js'
 import SalaryStructure from '../models/SalaryStructure.js'
-import { calculateSalaryRules } from './salaryRules.js'
+import TimeOffRequest from '../models/TimeOffRequest.js'
+import { calculateSalaryRules, validateSalaryRules } from './salaryRules.js'
 import { findApplicableContract, validatePeriod } from './contracts.js'
 
 function payrunError(message, statusCode = 400) {
@@ -20,11 +21,20 @@ function uniqueIds(ids = []) {
   return [...new Set(ids.map((id) => id.toString()))]
 }
 
+function employeeDataWarnings(employee) {
+  const warnings = []
+  if (!employee.workEmail) warnings.push('missing work email')
+  if (!employee.department) warnings.push('missing department')
+  if (!employee.jobPosition) warnings.push('missing job position')
+  if (!employee.bankName || !employee.bankAccountNumber) warnings.push('missing bank information')
+  return warnings
+}
+
 export async function getEligibleEmployees(salaryStructureId, periodStart, periodEnd) {
   const { start, end } = validatePeriod(periodStart, periodEnd)
   if (!(await SalaryStructure.exists({ _id: salaryStructureId, active: true }))) throw payrunError('Active salary structure not found', 404)
 
-  const employees = await Employee.find({ status: 'active' }).sort({ lastName: 1, firstName: 1 })
+  const employees = await Employee.find({ status: 'active' }).select('+bankAccountNumber').sort({ lastName: 1, firstName: 1 })
   const eligible = []
   const ineligible = []
   for (const employee of employees) {
@@ -34,7 +44,7 @@ export async function getEligibleEmployees(salaryStructureId, periodStart, perio
       if (duplicatePayslip) {
         ineligible.push({ employee, reason: 'A payslip already exists for this period' })
       } else {
-        eligible.push({ employee, contract })
+        eligible.push({ employee, contract, warnings: employeeDataWarnings(employee) })
       }
     } catch (error) {
       ineligible.push({ employee, reason: error.message })
@@ -70,12 +80,27 @@ export async function computePayrun(payrunId) {
     await session.withTransaction(async () => {
       const payrun = await Payrun.findOne({ _id: payrunId, status: 'draft' }).session(session)
       if (!payrun) throw payrunError('Only draft payruns can be computed', 409)
-      payrun.status = 'computing'
-      await payrun.save({ session })
 
       const rules = await SalaryRule.find({ salaryStructureId: payrun.salaryStructureId, active: true }).sort({ sequence: 1 }).lean().session(session)
-      if (!rules.length) throw payrunError('Salary structure has no active salary rules', 422)
-      const employees = await Employee.find({ _id: { $in: payrun.employeeIds }, status: 'active' }).session(session)
+      if (!rules.length) {
+        payrun.status = 'computed'
+        payrun.warnings = ['invalid payroll configuration: salary structure has no active salary rules']
+        await payrun.save({ session })
+        result = payrun
+        return
+      }
+      try {
+        validateSalaryRules(rules)
+      } catch (error) {
+        payrun.status = 'computed'
+        payrun.warnings = [`invalid payroll configuration: ${error.message}`]
+        await payrun.save({ session })
+        result = payrun
+        return
+      }
+      payrun.status = 'computing'
+      await payrun.save({ session })
+      const employees = await Employee.find({ _id: { $in: payrun.employeeIds }, status: 'active' }).select('+bankAccountNumber').session(session)
       const warnings = []
       let totalGross = 0
       let totalNet = 0
@@ -83,9 +108,23 @@ export async function computePayrun(payrunId) {
 
       for (const employee of employees) {
         try {
+          const employeeWarnings = employeeDataWarnings(employee)
+          for (const warning of employeeWarnings) warnings.push(`${employee.employeeNumber}: ${warning}`)
+          const duplicatePayslip = await Payslip.exists({ employeeId: employee._id, periodStart: payrun.periodStart, periodEnd: payrun.periodEnd, payrunId: { $ne: payrun._id } }).session(session)
+          if (duplicatePayslip) {
+            warnings.push(`${employee.employeeNumber}: duplicate payslip exists for this period`)
+            continue
+          }
           const contract = await findApplicableContract(employee._id, payrun.periodStart, payrun.periodEnd, session)
+          if (contract.salaryStructureId.toString() !== payrun.salaryStructureId.toString()) {
+            warnings.push(`${employee.employeeNumber}: applicable contract uses a different salary structure`)
+            continue
+          }
           const workedDays = await Attendance.countDocuments({ employeeId: employee._id, workDate: { $gte: payrun.periodStart, $lte: payrun.periodEnd }, status: { $in: ['present', 'late', 'overtime', 'corrected'] } }).session(session)
-          const calculation = calculateSalaryRules(rules, { BASIC: contract.wage, WORKED_DAYS: workedDays })
+          const approvedLeave = await TimeOffRequest.find({ employeeId: employee._id, status: 'approved', startDate: { $lte: payrun.periodEnd }, endDate: { $gte: payrun.periodStart } }).populate('timeOffTypeId', 'unit').session(session)
+          const approvedLeaveDays = approvedLeave.filter((request) => request.timeOffTypeId?.unit === 'days').reduce((total, request) => total + request.requestedAmount, 0)
+          const approvedLeaveHours = approvedLeave.filter((request) => request.timeOffTypeId?.unit === 'hours').reduce((total, request) => total + request.requestedAmount, 0)
+          const calculation = calculateSalaryRules(rules, { BASIC: contract.wage, WORKED_DAYS: workedDays, APPROVED_LEAVE_DAYS: approvedLeaveDays, APPROVED_LEAVE_HOURS: approvedLeaveHours })
           const payslip = await Payslip.findOneAndUpdate(
             { payrunId: payrun._id, employeeId: employee._id },
             {

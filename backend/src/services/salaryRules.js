@@ -61,8 +61,34 @@ function roundAmount(amount) {
   return Math.round((amount + Number.EPSILON) * 100) / 100
 }
 
+export function validateSalaryRules(rules) {
+  const activeRules = rules.filter((rule) => rule.active !== false).sort((left, right) => left.sequence - right.sequence)
+  const codes = new Set()
+  const payrollInputs = new Set(['BASIC', 'WORKED_DAYS', 'APPROVED_LEAVE_DAYS', 'APPROVED_LEAVE_HOURS'])
+  for (const rule of activeRules) {
+    const code = rule.code.toUpperCase()
+    if (codes.has(code)) throw calculationError(`Duplicate salary rule code: ${code}`)
+    if (rule.amountType === 'fixed' && !Number.isFinite(Number(rule.amount))) throw calculationError(`Fixed rule ${code} has no valid amount`)
+    if (rule.amountType === 'percentage' && !Number.isFinite(Number(rule.percentage))) throw calculationError(`Percentage rule ${code} has no valid percentage`)
+    if (rule.amountType === 'formula' && !rule.formula) throw calculationError(`Formula rule ${code} has no formula`)
+    if (rule.amountType === 'formula') {
+      const references = rule.formula.match(/[A-Z][A-Z0-9_]*/g) || []
+      for (const reference of references) {
+        if (!codes.has(reference) && !payrollInputs.has(reference)) throw calculationError(`Rule ${code} references missing or later rule ${reference}`)
+      }
+    }
+    for (const dependency of rule.dependsOn || []) {
+      const dependencyRule = activeRules.find((candidate) => candidate.code.toUpperCase() === dependency.toUpperCase())
+      if (!dependencyRule) throw calculationError(`Rule ${code} depends on missing rule ${dependency}`)
+      if (dependencyRule.sequence >= rule.sequence) throw calculationError(`Rule ${code} depends on a later rule ${dependency}`)
+    }
+    codes.add(code)
+  }
+  return activeRules
+}
+
 export function calculateSalaryRules(rules, inputs = {}) {
-  const orderedRules = [...rules].filter((rule) => rule.active !== false).sort((left, right) => left.sequence - right.sequence)
+  const orderedRules = validateSalaryRules(rules)
   const values = Object.fromEntries(Object.entries(inputs).map(([key, value]) => [key.toUpperCase(), Number(value) || 0]))
   const lines = []
 

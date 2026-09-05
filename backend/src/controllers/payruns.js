@@ -10,7 +10,7 @@ export async function previewPayrun(request, response, next) {
     return response.json({
       periodStart: preview.periodStart,
       periodEnd: preview.periodEnd,
-      eligibleEmployees: preview.eligible.map(({ employee, contract }) => ({ employee, contract })),
+      eligibleEmployees: preview.eligible.map(({ employee, contract, warnings }) => ({ employee, contract, warnings })),
       ineligibleEmployees: preview.ineligible,
     })
   } catch (error) { return next(error) }
