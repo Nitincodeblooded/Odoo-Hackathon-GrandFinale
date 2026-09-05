@@ -7,11 +7,15 @@ const payrunSchema = new mongoose.Schema({
   salaryStructureId: { type: mongoose.Schema.Types.ObjectId, ref: 'SalaryStructure', required: true },
   periodStart: { type: Date, required: true },
   periodEnd: { type: Date, required: true },
+  employeeIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }],
   status: { type: String, enum: payrunStatuses, default: 'draft', index: true },
   employeeCount: { type: Number, default: 0, min: 0 },
   totalGross: { type: Number, default: 0, min: 0 },
   totalNet: { type: Number, default: 0, min: 0 },
   warnings: [{ type: String, trim: true }],
+  validatedAt: { type: Date },
+  paidAt: { type: Date },
+  sentAt: { type: Date },
 }, { timestamps: true })
 
 payrunSchema.index({ periodStart: 1, periodEnd: 1, status: 1 })

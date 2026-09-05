@@ -72,7 +72,7 @@ export function calculateSalaryRules(rules, inputs = {}) {
       if (values[dependency.toUpperCase()] === undefined) throw calculationError(`Rule ${code} depends on ${dependency}, which has not been calculated`)
     }
     let amount
-    if (rule.amountType === 'fixed') amount = Number(rule.amount)
+    if (rule.amountType === 'fixed') amount = code === 'BASIC' && values.BASIC !== undefined ? values.BASIC : Number(rule.amount)
     if (rule.amountType === 'percentage') {
       const base = (rule.dependsOn || []).reduce((total, dependency) => total + (values[dependency.toUpperCase()] || 0), 0)
       amount = base * (Number(rule.percentage) / 100)

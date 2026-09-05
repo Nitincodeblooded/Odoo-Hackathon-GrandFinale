@@ -13,6 +13,7 @@ const payslipSchema = new mongoose.Schema({
   grossAmount: { type: Number, default: 0, min: 0 },
   deductionAmount: { type: Number, default: 0, min: 0 },
   netAmount: { type: Number, default: 0, min: 0 },
+  sentAt: { type: Date },
   employeeSnapshot: {
     employeeNumber: String,
     name: String,

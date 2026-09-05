@@ -29,14 +29,14 @@ export async function assertNoOverlappingActiveContract(employeeId, startDate, e
   }
 }
 
-export async function findApplicableContract(employeeId, periodStart, periodEnd) {
+export async function findApplicableContract(employeeId, periodStart, periodEnd, session) {
   const { start, end } = validatePeriod(periodStart, periodEnd)
   const contracts = await Contract.find({
     employeeId,
     status: 'active',
     startDate: { $lte: end },
     $or: [{ endDate: null }, { endDate: { $gte: start } }],
-  }).sort({ startDate: -1 })
+  }).sort({ startDate: -1 }).session(session)
 
   if (contracts.length === 0) {
     throw createContractError('No active contract applies to this payroll period', 422)

@@ -69,6 +69,8 @@ Phase 6 time off now provides policy types, approved allocations, employee balan
 
 Phase 7 salary structures and rules now provide ordered fixed, percentage, and formula calculations with dependencies and payslip-ready lines.
 
+Phase 8 Payruns now provide two-step employee selection, contract-aware computation, salary-rule-driven payslips, guarded validation/payment transitions, and delivery timestamps.
+
 ## First technical milestone
 
 Complete Step 1 and the employee foundation with one vertical check: an authorized user can create an employee, retrieve it through the API, and see it in the frontend.
