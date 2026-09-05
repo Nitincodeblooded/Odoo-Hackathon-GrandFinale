@@ -73,6 +73,8 @@ Phase 8 Payruns now provide two-step employee selection, contract-aware computat
 
 Phase 9 now combines contract wage, attendance, approved leave, employee data, and configuration-driven salary rules into historical payslips with blocking payroll warnings.
 
+Phase 10 now provides individual PDF/print output and SMTP-backed bulk payslip delivery from paid Payruns.
+
 ## First technical milestone
 
 Complete Step 1 and the employee foundation with one vertical check: an authorized user can create an employee, retrieve it through the API, and see it in the frontend.

@@ -10,6 +10,8 @@ import SalaryStructure from '../models/SalaryStructure.js'
 import TimeOffRequest from '../models/TimeOffRequest.js'
 import { calculateSalaryRules, validateSalaryRules } from './salaryRules.js'
 import { findApplicableContract, validatePeriod } from './contracts.js'
+import { sendPayslipEmail } from './email.js'
+import { payslipFileName, renderPayslipPdf } from './payslipPdf.js'
 
 function payrunError(message, statusCode = 400) {
   const error = new Error(message)
@@ -190,11 +192,32 @@ export async function markPayrunPaid(payrunId) {
 export async function sendPayrunPayslips(payrunId) {
   const payrun = await Payrun.findOne({ _id: payrunId, status: 'paid' })
   if (!payrun) throw payrunError('Only paid payruns can send payslips', 409)
-  const sentAt = new Date()
-  await Payslip.updateMany({ payrunId, status: 'paid' }, { sentAt })
-  payrun.sentAt = sentAt
-  await payrun.save()
-  return { payrun, sentCount: await Payslip.countDocuments({ payrunId, sentAt }) }
+  const payslips = await Payslip.find({ payrunId, status: 'paid' }).populate('employeeId', 'firstName lastName workEmail employeeNumber')
+  const failures = []
+  let sentCount = 0
+  for (const payslip of payslips) {
+    try {
+      const pdf = await renderPayslipPdf(payslip)
+      await sendPayslipEmail({
+        to: payslip.employeeId?.workEmail,
+        employeeName: payslip.employeeSnapshot?.name || `${payslip.employeeId?.firstName || ''} ${payslip.employeeId?.lastName || ''}`.trim(),
+        periodStart: payrun.periodStart.toISOString().slice(0, 10),
+        periodEnd: payrun.periodEnd.toISOString().slice(0, 10),
+        fileName: payslipFileName(payslip),
+        pdf,
+      })
+      payslip.sentAt = new Date()
+      await payslip.save()
+      sentCount += 1
+    } catch (error) {
+      failures.push({ employeeId: payslip.employeeId?._id, employee: payslip.employeeSnapshot?.name, reason: error.message })
+    }
+  }
+  if (failures.length === 0 && sentCount > 0) {
+    payrun.sentAt = new Date()
+    await payrun.save()
+  }
+  return { payrun, sentCount, failedCount: failures.length, failures }
 }
 
 export { payrunError }

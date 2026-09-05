@@ -60,6 +60,9 @@ export async function markPaidController(request, response, next) {
 export async function sendPayslipsController(request, response, next) {
   try {
     const result = await sendPayrunPayslips(request.params.payrunId)
-    return response.json({ payrun: result.payrun, sentCount: result.sentCount, message: 'Payslips marked for delivery' })
+    if (result.sentCount === 0 && result.failedCount > 0) {
+      return response.status(503).json({ payrun: result.payrun, sentCount: 0, failedCount: result.failedCount, failures: result.failures, error: 'No payslips could be delivered' })
+    }
+    return response.json({ payrun: result.payrun, sentCount: result.sentCount, failedCount: result.failedCount, failures: result.failures, message: 'Payslip email delivery completed' })
   } catch (error) { return next(error) }
 }
