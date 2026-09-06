@@ -29,19 +29,29 @@ export async function register(request, response, next) {
 
     const normalizedEmail = email.trim().toLowerCase()
     const existingUser = await User.findOne({ email: normalizedEmail })
-    const existingEmployee = await Employee.findOne({ $or: [{ employeeNumber: employeeNumber.trim() }, { workEmail: normalizedEmail }] })
-    if (existingUser || existingEmployee) {
-      return response.status(409).json({ error: 'Email, employee number, or work email is already in use' })
-    }
+    if (existingUser) return response.status(409).json({ error: 'Email is already in use' })
 
-    const employee = await Employee.create({
-      employeeNumber: employeeNumber.trim(),
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      workEmail: normalizedEmail,
-      department,
-      jobPosition,
-    })
+    let employee = await Employee.findOne({ $or: [{ employeeNumber: employeeNumber.trim() }, { workEmail: normalizedEmail }] })
+    let createdEmployee = false
+    if (employee) {
+      const matchesIdentity = employee.employeeNumber === employeeNumber.trim()
+        && employee.workEmail === normalizedEmail
+        && employee.firstName.toLowerCase() === firstName.trim().toLowerCase()
+        && employee.lastName.toLowerCase() === lastName.trim().toLowerCase()
+      if (!matchesIdentity || employee.userId || employee.status !== 'active') {
+        return response.status(409).json({ error: 'Employee record cannot be linked to this account' })
+      }
+    } else {
+      employee = await Employee.create({
+        employeeNumber: employeeNumber.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        workEmail: normalizedEmail,
+        department,
+        jobPosition,
+      })
+      createdEmployee = true
+    }
 
     try {
       const passwordHash = await bcrypt.hash(password, passwordRounds)
@@ -49,7 +59,7 @@ export async function register(request, response, next) {
       await Employee.updateOne({ _id: employee._id }, { userId: user._id })
       return response.status(201).json({ token: createToken(user), user: serializeUser({ ...user.toObject(), employeeId: employee }) })
     } catch (error) {
-      await Employee.deleteOne({ _id: employee._id })
+      if (createdEmployee) await Employee.deleteOne({ _id: employee._id })
       throw error
     }
   } catch (error) {

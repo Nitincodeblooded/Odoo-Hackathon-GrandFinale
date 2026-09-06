@@ -4,11 +4,11 @@ import { createSchedule, deactivateSchedule, getSchedule, listSchedules, schedul
 
 const router = Router()
 
-router.use(authenticate)
+router.use(authenticate, authorize(...scheduleManagementRoles))
 router.get('/', listSchedules)
 router.get('/:scheduleId', getSchedule)
-router.post('/', authorize(...scheduleManagementRoles), createSchedule)
-router.patch('/:scheduleId', authorize(...scheduleManagementRoles), updateSchedule)
-router.delete('/:scheduleId', authorize(...scheduleManagementRoles), deactivateSchedule)
+router.post('/', createSchedule)
+router.patch('/:scheduleId', updateSchedule)
+router.delete('/:scheduleId', deactivateSchedule)
 
 export default router

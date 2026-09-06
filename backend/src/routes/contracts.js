@@ -4,11 +4,11 @@ import { contractManagementRoles, createContract, getApplicableContract, getCont
 
 const router = Router()
 
-router.use(authenticate)
+router.use(authenticate, authorize(...contractManagementRoles))
 router.get('/applicable', getApplicableContract)
 router.get('/', listContracts)
 router.get('/:contractId', getContract)
-router.post('/', authorize(...contractManagementRoles), createContract)
-router.patch('/:contractId', authorize(...contractManagementRoles), updateContract)
+router.post('/', createContract)
+router.patch('/:contractId', updateContract)
 
 export default router

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "seed:admin": "node src/scripts/createAdmin.js"
+    "seed:admin": "node src/scripts/createAdmin.js",
+    "seed:demo": "node src/scripts/seedDemoData.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

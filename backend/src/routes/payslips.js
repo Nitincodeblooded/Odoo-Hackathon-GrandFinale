@@ -1,10 +1,11 @@
 import { Router } from 'express'
-import { authenticate } from '../middleware/auth.js'
-import { getPayslipPdf, getPayslipPrintView } from '../controllers/payslips.js'
+import { authenticate, authorize } from '../middleware/auth.js'
+import { getPayslipDetail, getPayslipPdf, getPayslipPrintView, payrollRoles } from '../controllers/payslips.js'
 
 const router = Router()
 
-router.use(authenticate)
+router.use(authenticate, authorize(...payrollRoles))
+router.get('/:payslipId', getPayslipDetail)
 router.get('/:payslipId/pdf', getPayslipPdf)
 router.get('/:payslipId/print', getPayslipPrintView)
 
